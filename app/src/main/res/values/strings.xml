@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">ShareSomePics</string>
+    <string name="login">LOGIN</string>
+    <string name="register">REGISTER</string>
+    <string name="password">Password</string>
+    <string name="e_mail_adress">E-mailAddress</string>
+    <string name="share_photograph">Share Photograph</string>
+    <string name="logout">Logout</string>
+    <string name="share">SHARE</string>
+    <string name="enter_your_comment">Enter your comment…</string>
+    <string name="clicable_image">Clicable Image</string>
+    <string name="user_email">User Email</string>
+    <string name="images_from_database">Images from Database</string>
+    <string name="user_comment">User Comment</string>
+</resources>
