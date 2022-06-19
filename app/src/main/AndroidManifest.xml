@@ -16,7 +16,7 @@
         android:theme="@style/Theme.ShareSomePics"
         tools:targetApi="31">
         <activity
-            android:name=".SharePhotograph"
+            android:name=".view.SharePhotograph"
             android:exported="false" />
         <activity
             android:name=".view.FeedActivity"

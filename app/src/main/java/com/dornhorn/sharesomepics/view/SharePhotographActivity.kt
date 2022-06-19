@@ -1,4 +1,4 @@
-package com.dornhorn.sharesomepics
+package com.dornhorn.sharesomepics.view
 
 import android.Manifest
 import android.app.Activity
@@ -15,8 +15,10 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.dornhorn.sharesomepics.R
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,6 +33,29 @@ class SharePhotograph : AppCompatActivity() {
     private lateinit var auth : FirebaseAuth
     private lateinit var database : FirebaseFirestore
 
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            val data: Intent? = result.data
+            pickedImage = data?.data
+
+            if (pickedImage != null){
+                if (Build.VERSION.SDK_INT >= 28)
+                {
+                    val source = ImageDecoder.createSource(this.contentResolver,pickedImage!!)
+                    pickedBitmap = ImageDecoder.decodeBitmap(source)
+                    val imageSelect = findViewById<ImageView>(R.id.imageView)
+                    imageSelect.setImageBitmap(pickedBitmap)
+                }
+                else
+                {
+                    pickedBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,pickedImage)
+                    val imageSelect = findViewById<ImageView>(R.id.imageView)
+                    imageSelect.setImageBitmap(pickedBitmap)
+                }
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_share_photograph)
@@ -43,7 +68,7 @@ class SharePhotograph : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseFirestore.getInstance()
 
-        imageSelect.setOnClickListener{
+            imageSelect.setOnClickListener{
             pickImage()
         }
 
@@ -57,7 +82,7 @@ class SharePhotograph : AppCompatActivity() {
             val imageReference = reference.child("images").child(imageName)
 
             if  (pickedImage != null){
-                imageReference.putFile(pickedImage!!).addOnSuccessListener { taskSnapshot ->
+                imageReference.putFile(pickedImage!!).addOnSuccessListener {
                     val uploadedImageReference = FirebaseStorage.getInstance().reference.child("images").child(imageName)
                     uploadedImageReference.downloadUrl.addOnSuccessListener { uri ->
                         val downloadUrl = uri.toString()
@@ -87,54 +112,16 @@ class SharePhotograph : AppCompatActivity() {
             }
         }
     }
-
     private fun pickImage(){
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             //No Permission
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),1)
         }else {
-            //If Already Had Permission
-            val galleryIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            startActivityForResult(galleryIntent,2)
+            openGallery()
         }
     }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    )   {
-        if (requestCode == 1){
-            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                val galleryIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                startActivityForResult(galleryIntent,2)
-            }
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null){
-
-            pickedImage = data.data
-
-            if (pickedImage != null){
-                if (Build.VERSION.SDK_INT >= 28)
-                {
-                    val source = ImageDecoder.createSource(this.contentResolver,pickedImage!!)
-                    pickedBitmap = ImageDecoder.decodeBitmap(source)
-                    val imageSelect = findViewById<ImageView>(R.id.imageView)
-                    imageSelect.setImageBitmap(pickedBitmap)
-                }
-                else
-                {
-                    pickedBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,pickedImage)
-                    val imageSelect = findViewById<ImageView>(R.id.imageView)
-                    imageSelect.setImageBitmap(pickedBitmap)
-                }
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
+    private fun openGallery() {
+        val galleryIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        resultLauncher.launch(galleryIntent)
     }
 }

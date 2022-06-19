@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dornhorn.sharesomepics.R
-import com.dornhorn.sharesomepics.SharePhotograph
 import com.dornhorn.sharesomepics.adapter.FeedRecyclerAdapter
 import com.dornhorn.sharesomepics.model.Post
 import com.google.firebase.auth.FirebaseAuth
